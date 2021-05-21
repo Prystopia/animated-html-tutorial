@@ -28,6 +28,7 @@ var Tutorial = new function()
     me.FrameInterval = 1000/60;
     me.TransitionTime = 1000;
     me.Steps = [];
+	me.Cutout = "Box";
 	me.Initialise = function()
 	{	
 		me.Draw.Initialise();
@@ -58,7 +59,7 @@ var Tutorial = new function()
 			me.Clear();
 			me.ctx.save();
 			me.ctx.beginPath();
-			me.ctx.fillStyle = "rgba(133,133,133, 0.5)";
+			me.ctx.fillStyle = "rgba(100,100,100, 0.5)";
 			me.ctx.fillRect(0,0, me.canvas.width, me.canvas.height);
 			me.ctx.beginPath();
 			me.ctx.arc(x,y,rad,0,2*Math.PI)
@@ -67,26 +68,48 @@ var Tutorial = new function()
 			me.Clear();
 			me.ctx.restore();
 		}
+		me.CreateCutoutBox = function(x, y, width, height)
+		{
+			//instead of just a straight circle we need to have a max height and width around the control we draw to and then use an oval, avoids having large controls with hugh circles
+			me.Clear();
+			me.ctx.save();
+			me.ctx.beginPath();
+			me.ctx.fillStyle = "rgba(100,100,100, 0.5)";
+			me.ctx.fillRect(0,0, me.canvas.width, me.canvas.height);
+			me.ctx.beginPath();
+			me.ctx.moveTo(x - 5,y - 5);
+			me.ctx.lineTo(x + width + 5, y - 5);
+			me.ctx.lineTo(x + width + 5, y + 5 + height);
+			me.ctx.lineTo(x - 5, y + 5 + height);			
+			me.ctx.stroke();
+			me.ctx.clip();
+			me.Clear();
+			me.ctx.restore();
+		}
 		me.DrawMessage = function(x,y, message)
 		{
+			me.ctx.font = "12px Arial";
+			var textMeasure = me.ctx.measureText(message);
+			var textWidth = textMeasure.width + 20;
+			var textHeight = 37;
 			me.ctx.save();
 			me.ctx.beginPath();
 			me.ctx.fillStyle = "#FFFFFF";
 			me.ctx.strokeStyle = "#000000";
 			me.ctx.beginPath();
 			me.ctx.moveTo(x, y);
-			me.ctx.lineTo(x + 250, y);
-			me.ctx.lineTo(x + 250, y + 100);
-			me.ctx.lineTo(x, y + 100);
+			me.ctx.lineTo(x + textWidth, y);
+			me.ctx.lineTo(x + textWidth, y + textHeight);
+			me.ctx.lineTo(x, y + textHeight);
 			me.ctx.closePath();
 			me.ctx.stroke();
 			me.ctx.fill();
 			
 			//me.ctx.fillRect(x,y, 250, 150);
 			me.ctx.beginPath();
-			me.ctx.font = "12px Arial";
+			
 			me.ctx.fillStyle = "#000000";
-			me.ctx.fillText(message,x  + 10,y + 25);
+			me.ctx.fillText(message, x + 10, y + 25);
 			
 			me.ctx.restore();
 		}
@@ -122,6 +145,7 @@ var Tutorial = new function()
 	}
 	me.Run = function()
 	{
+		me.AnimationManager.TimeToNextStep = me.Steps[0].Duration * 1000;
 		me.AnimationManager.Run(me.Steps);
 	}
 	me.AnimationManager = new function()
@@ -130,6 +154,7 @@ var Tutorial = new function()
 		me.CurrentStep = 0;
 		me.Transitioning = false;
 		me.TimeToNext = 0;
+		me.TimeToNextStep = 0;
 		//need to update on scroll
 		me.Run = function()
 		{
@@ -138,8 +163,8 @@ var Tutorial = new function()
 			if(step.Control)
 			{
 				//need to position the circles better + centre better
-				x = step.Control.getBoundingClientRect().left + window.scrollX;
-				y = step.Control.getBoundingClientRect().top + window.scrollY;
+				x = step.Control.getBoundingClientRect().left;// + window.scrollX;
+				y = step.Control.getBoundingClientRect().top;// + window.scrollY;
 				width = step.Control.offsetWidth / 2;
 				height = step.Control.offsetHeight / 2;
 			}
@@ -149,8 +174,8 @@ var Tutorial = new function()
 				//get screen width
 				x = (window.innerWidth / 2) - 250;
 				y = (window.innerHeight / 2) - 150;
-				width = 50;
-				height = 50;
+				width = 1;
+				height = 1;
 			}
 			
 			if(me.Transitioning)
@@ -160,8 +185,8 @@ var Tutorial = new function()
 				{
 					var percentage = (Tutorial.TransitionTime - me.TimeToNext)/Tutorial.TransitionTime;
 					var previousStep = Tutorial.Steps[me.CurrentStep - 1];
-					var prevX = previousStep.Control ? previousStep.Control.getBoundingClientRect().left + window.scrollX : (window.innerWidth / 2);
-					var prevY = previousStep.Control ? previousStep.Control.getBoundingClientRect().top + window.scrollY : (window.innerHeight / 2);
+					var prevX = previousStep.Control ? previousStep.Control.getBoundingClientRect().left : (window.innerWidth / 2);
+					var prevY = previousStep.Control ? previousStep.Control.getBoundingClientRect().top : (window.innerHeight / 2);
 					var x = me.Lerp(prevX, x, percentage);
 					var y = me.Lerp(prevY, y, percentage);
 					
@@ -176,32 +201,44 @@ var Tutorial = new function()
 					me.Transitioning = false;
 				}
 			}
+			else
+			{
+				me.TimeToNextStep -= Tutorial.FrameInterval;
+			}
 			if(x && y && width && height)
 			{
-				Tutorial.Draw.CreateArc(x + width, y + height, width + 5);
-			}
-			if(!me.Transitioning)
-			{
-				Tutorial.Draw.DrawMessage(x + width, y, step.StepMessage);
-				//clear arc
-				me.CurrentStep++;
-				
-				if(me.CurrentStep < Tutorial.Steps.length)
+				if(Tutorial.Cutout == "Box")
 				{
-					setTimeout(me.Run, step.Duration * 1000);
-					me.Transitioning = true;
-					me.TimeToNext = Tutorial.TransitionTime;
+					Tutorial.Draw.CreateCutoutBox(x, y, width * 2, height * 2);
 				}
 				else
 				{
-					//need to remove the canvas
-					setTimeout(Tutorial.Draw.Destroy, step.Duration * 1000);
+					Tutorial.Draw.CreateArc(x + width, y + height, width + 5);
 				}
 			}
-			else
+			if(!me.Transitioning)
 			{
-				setTimeout(me.Run, Tutorial.FrameInterval);
+				Tutorial.Draw.DrawMessage(x + ((width + 5) * 2), y, step.StepMessage);
+				if(me.TimeToNextStep <= 0)
+				{
+					//clear arc
+					me.CurrentStep++;
+					
+					if(me.CurrentStep < Tutorial.Steps.length)
+					{
+						me.Transitioning = true;
+						me.TimeToNext = Tutorial.TransitionTime;
+						me.TimeToNextStep = Tutorial.Steps[me.CurrentStep].Duration * 1000;
+					}
+					else
+					{
+						//need to remove the canvas
+						setTimeout(Tutorial.Draw.Destroy, step.Duration * 1000);
+						return;
+					}
+				}
 			}
+			setTimeout(me.Run, Tutorial.FrameInterval);
 		}
 		
 		me.Lerp = function(x1, x2, t)
