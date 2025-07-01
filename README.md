@@ -13,8 +13,6 @@ A tutorial can be created in 3 steps:
 1. `tutorial.addStep(".test-control", "Text to display about Test control", 10); //Add a step to the tutorial`
 1. `tutorial.run(); //instantly runs the tutorial`
 
-For complex or dynamic forms, this can quickly become unweildy and difficult to use
-
 ## Config
 
 Config values can be passed into the `TutorialManager` class to change the look and feel of the tutorial.
