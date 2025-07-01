@@ -6,12 +6,7 @@ _User friendly tutorials and help documentation_
 
 ![Tutorial in action](https://prystopiastorage.blob.core.windows.net/media/AnimatedTutorial.gif)
 
-
-
 ## Usage
-
-In the interest of getting feedback as soon as possible, whilst some of the other features are being worked on the project currently consists of a single `.ts` file, which can be copied and put into your project.
-
 A tutorial can be created in 3 steps:
 
 1. `const tutorial = new AnimatedTutorial(); //Create a new instance of the tutorial`
