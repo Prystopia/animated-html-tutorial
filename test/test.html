@@ -1,0 +1,40 @@
+<html>
+    <head>
+        <script>var exports = {};</script>
+        <script src="../js/animated-tutorial.js"></script>
+        <style>
+            div
+            {
+                width: 150px;
+                height: 100px;
+                background-color: #2356BB;
+                margin: 15px;
+                padding:15px;
+            }
+
+            .inner
+            {
+                width: 50px;
+                height: 50px;
+                background-color: #BB4422;
+            }
+        </style>
+    </head>
+    <body>
+        <div class="div-one">
+            <div class="inner">
+
+            </div>
+        </div>
+        <div class="div-two"></div>
+        <div class="div-three"></div>
+        <script>
+            var tutorial = new AnimatedTutorial({allowManualControl: true});
+            tutorial.addStep(".div-one", "This is the first div", 10);
+            tutorial.addStep(".div-two", "This is the second div", 10);
+            tutorial.addStep(".div-three", "This is the third div", 10);
+            tutorial.addStep(".div-one .inner", "This is the inner div", 10);
+            tutorial.run();
+        </script>
+    </body>
+</html>

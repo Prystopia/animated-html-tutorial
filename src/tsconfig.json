@@ -1,9 +1,19 @@
 {
-  "compilerOptions": {
-    "target": "ES5",
+   "compilerOptions": {
+  //   "target": "ES2022",
+  //   "module": "esnext",
+  //   "sourceMap": true,
+  //   "lib": [
+  //     "es2017",
+  //     "dom"
+  //   ],
+  //   "outDir": "/js"
+  // }
+
+  "target": "ES5",
     "module": "CommonJS",
     "sourceMap": true,
     "lib": ["dom", "es2015", "es5", "es6"],
-    "outDir": "/js"
-  }
+    "outDir": "../js"
+   }
 }

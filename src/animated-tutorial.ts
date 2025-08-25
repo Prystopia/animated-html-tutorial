@@ -1,10 +1,14 @@
+
 export class TutorialArgs
 {
     public frameInterval: number|null =  1000/60;
-    public transitionTimeS: number|null = 100;
+    public transitionTimeS: number|null = 400;
     public cutout: "Box"|"Oval" = "Box";
     public font: string = "19px Arial";
     public overlayColour: string = "rgba(100,100,100,0.8)"
+    public showTutorialOnce: boolean = true;
+    public tutorialIden: string = "prys-animated-tutorial-seen";
+    public allowManualControl: boolean = true;
 
 }
 export class TutorialStep
@@ -12,7 +16,7 @@ export class TutorialStep
     public control:string|null = null;
     public stepMessage: string|null = null;
     public durationS: number = 2;
-    public callback: (() => Promise<void>) | null = null;
+    public callback?: () => Promise<void> | null = null;
 }
 
 export class TutorialDrawingManager
@@ -21,10 +25,18 @@ export class TutorialDrawingManager
     private ctx: CanvasRenderingContext2D|null = null;
     private args: TutorialArgs|null = null;
 
-    public initialise(args: TutorialArgs): void
+    private prevBounds: number[] = [];
+    private nextBounds: number[] = [];
+    private nextCallback:() => void | null = null;
+    private prevCallback: () => void | null = null
+
+    public initialise(args: TutorialArgs, nextCallback: () => void, prevCallback: () => void): void
     {
         this.args = args;
+        this.nextCallback = nextCallback;
+        this.prevCallback = prevCallback;
         this.canvas = document.createElement("canvas");
+        this.canvas.addEventListener("click", (ev) =>  this.handleClick(ev));
         //TODO - needs to be configurable to ensure we don't sit under existing elements
         this.canvas.style.zIndex = "2";
 		this.canvas.style.position = "fixed";
@@ -82,14 +94,36 @@ export class TutorialDrawingManager
         }
     }
 
+    public handleClick(mouseEvent: MouseEvent): void
+    {
+        //check if the mouse click is within the prev or next bounding boxes
+        const x = mouseEvent.clientX;
+        const y = mouseEvent.clientY;
+
+        if(x > this.prevBounds[0] && x < this.prevBounds[0] + this.prevBounds[2]
+            && y > this.prevBounds[1]  && y < this.prevBounds[1] + this.prevBounds[3])
+        {
+             this.prevCallback();
+        }
+
+         if(x > this.nextBounds[0] && x < this.nextBounds[0] + this.nextBounds[2]
+            && y > this.nextBounds[1]  && y < this.nextBounds[1] + this.nextBounds[3])
+        {
+            this.nextCallback();
+        }
+    }
+
     public drawMessage(x: number,y: number, message: string): void
     {
+        const nextPrevWidth = 25;
+        let maxWidth = 500;
+
         if(this.ctx != null && this.args != null)
         {
-            const maxWidth = 500;
-
             //need to handle wrapping of text
             this.ctx.font = this.args.font;
+            //var textMeasure = this.ctx.measureText(message);
+            //var textWidth = textMeasure.width + 20;
 
             //break on spaces
             var words = message.split(" ");
@@ -115,6 +149,18 @@ export class TutorialDrawingManager
                 count++;
             }
 
+            if(lines.length == 1)
+            {
+                //if only a single line of text, we may be able to reduce the width of the box
+                maxWidth = this.ctx.measureText(lines[0]).width + 20
+            }
+
+            if(this.args.allowManualControl)
+            {
+                maxWidth += (nextPrevWidth * 2);
+            }
+
+        //TODO - stop message covering item
             var textHeight = 25;
             const height =  (textHeight * lines.length) + 25;
             
@@ -146,25 +192,50 @@ export class TutorialDrawingManager
             this.ctx.closePath();
             this.ctx.stroke();
             this.ctx.fill();
+
+            if(this.args.allowManualControl)
+            {
+                this.ctx.fillStyle = "#000000";
+                this.ctx.moveTo(boxLeft + nextPrevWidth, boxHeight);
+                this.ctx.lineTo(boxLeft + nextPrevWidth, boxHeight + height);
+                this.ctx.stroke();
+                let metrics  = this.ctx.measureText(">");
+                let width = metrics.width;
+                let txtHeight = metrics.fontBoundingBoxAscent + metrics.fontBoundingBoxDescent;
+                const leftOffset = (nextPrevWidth - width) / 2;
+                const topOffset  = (height - txtHeight);
+                this.ctx.fillText("<", boxLeft + leftOffset, boxHeight + topOffset);
+                this.ctx.moveTo((boxLeft + maxWidth) - nextPrevWidth, boxHeight);
+                this.ctx.lineTo((boxLeft + maxWidth) - nextPrevWidth, boxHeight + height);
+                this.ctx.stroke();
+                this.ctx.beginPath();
+                this.ctx.fillText(">", ((boxLeft + maxWidth) - nextPrevWidth) + leftOffset, boxHeight + topOffset);
+
+                //set the bounding box for click recognition
+                this.prevBounds[0] = boxLeft; //topLeftX
+                this.prevBounds[1] = boxHeight; // topLeftY
+                this.prevBounds[2] = nextPrevWidth; // width;
+                this.prevBounds[3] = boxHeight; // height;
+
+                this.nextBounds[0] = (boxLeft + maxWidth) - nextPrevWidth; //topLeftX
+                this.nextBounds[1] = boxHeight; // topLeftY
+                this.nextBounds[2] = nextPrevWidth; // width;
+                this.nextBounds[3] = boxHeight; // height;
+            }
             
             //me.ctx.fillRect(x,y, 250, 150);
             this.ctx.beginPath();
             
+            const leftOffset = 10 + ((this.args.allowManualControl)? nextPrevWidth  : 0);
+
             this.ctx.fillStyle = "#000000";
             for(let i = 0; i < lines.length; i++)
             {
-                this.ctx.fillText(lines[i], boxLeft + 10, boxHeight + 25 + (textHeight * i));
+                this.ctx.fillText(lines[i], boxLeft + leftOffset, boxHeight + 25 + (textHeight * i));
             }
             
             this.ctx.restore();
         }
-    }
-
-    private skipStep(): void
-    {
-        //store reference to timeout
-        //clear current timout
-        //increment index by one, call run method again
 
     }
 
@@ -181,6 +252,7 @@ export class TutorialDrawingManager
         this.ctx = null;
         if(this.canvas != null)
         {
+            this.canvas.removeEventListener("click", (ev) => this.handleClick(ev));
             document.body.removeChild(this.canvas);
         }
         this.canvas = null;
@@ -195,14 +267,30 @@ export class TutorialAnimationManager
     public timeToNextStep: number = 0;
     private args: TutorialArgs = new TutorialArgs();
     private drawingManager: TutorialDrawingManager|null = null;
+    private onEnd: (()=>void)|null = null;
+    private state:TutorialStep[]|null = null;
 
-    public initialise(args: TutorialArgs): void
+    public initialise(args: TutorialArgs, onEndEvent: (()=>void)|null): void
     {
         this.args = args;
         this.drawingManager = new TutorialDrawingManager();
-        this.drawingManager.initialise(args);
+        this.drawingManager.initialise(args, () => this.nextStep(), () => this.prevStep());
+        this.onEnd = onEndEvent;
     }
 
+    private prevStep(): void
+    {
+        if(this.currentStep > 0)
+        {
+            this.currentStep -= 1;
+            this.run(this.state)
+        }
+    }
+    private nextStep(): void
+    {
+        this.timeToNextStep = 0;
+        this.run(this.state)
+    }
     private scrollToElement(control: HTMLElement, offset: number): number
     {
         /*const visibleRange = (this.elementToFollow.nativeElement.clientHeight / this.elementToFollow.nativeElement.scrollHeight) * 100;
@@ -236,12 +324,10 @@ export class TutorialAnimationManager
             //if parent scroll height is over half way of visible element then start scrolling
             if(contTop > middle)
             {
-                //console.log(control, parent, "Control top", contTop, "parentHeight", parent.scrollHeight, parent.offsetHeight, parent.clientHeight, parent.scrollTop);
                 //try to keep elements in the middle of the element
                 //control top is within the hidden element, so need to get the percentage
                 const maxScroll = (parent.scrollHeight - parent.clientHeight)
                 let scrollOffset = (contTop - middle);
-                //console.log(parent.scrollHeight - parent.clientHeight);
                 //if scroll has reached the bottom
                 if(Math.round(parent.scrollTop) >= maxScroll)
                 {
@@ -282,8 +368,6 @@ export class TutorialAnimationManager
                 const bounds = control.getBoundingClientRect();
                 //need to position the circles better + centre better
                 x = bounds.left;// + window.scrollX;
-                //console.log(scrollAmount);
-                console.log(scrollAmount);
                 y = bounds.top - scrollAmount;//get height as proportion of height of parent then scroll to that position,  offset comes off height of scrollable div + window.scrollY;
                 mesX = bounds.right;
                 mesY = bounds.bottom;
@@ -365,7 +449,7 @@ export class TutorialAnimationManager
 				{
                     if(steps[this.currentStep].callback != null)
                     {
-                        steps[this.currentStep].callback!().then(()=>{
+                        steps[this.currentStep].callback().then(()=>{
                         //clear arc
                         this.currentStep++;
                         if(this.currentStep < steps.length)
@@ -380,6 +464,10 @@ export class TutorialAnimationManager
                             //need to remove the canvas if we have finished the process
                             //once we have reached the end of the steps we can just destroy without a timeout
                             this.drawingManager?.destroy();
+                            if(this.onEnd != null)
+                            {
+                                this.onEnd();
+                            }
                             return;
                         }
                         });
@@ -387,10 +475,16 @@ export class TutorialAnimationManager
 				}
                 else
                 {
-                    //TODO - add in click to confirm as well as a countdown (?optional run mode?)
-                    //TODO - no need to render all frames, just keep the message on screen for the specified time
-                    setTimeout(() => this.run(steps), this.timeToNextStep);
-                    this.timeToNextStep = 0;
+                    //No need to render all frames, just keep the message on screen for the specified time
+                    if(!this.args.allowManualControl)
+                    {
+                        setTimeout(() => this.run(steps), this.timeToNextStep);
+                        this.timeToNextStep = 0;
+                    }
+                    else
+                    {
+                        this.state = steps;
+                    }
                 }
 			}
 			
@@ -405,11 +499,14 @@ export class TutorialAnimationManager
 export class AnimatedTutorial
 {
     //TODO - add local storage check to se whether user has already completed the tutorial based on the provided id or route
+    //TODO - allow styling of the items e.g. font to use etc
 
     private steps: TutorialStep[] = [];
     private args: TutorialArgs|null = null;
 
     private animationManager: TutorialAnimationManager|null = null;
+
+    public tutorialEnd: () => void | null = null;
 
     constructor(args: TutorialArgs|null = null)
     {
@@ -441,18 +538,39 @@ export class AnimatedTutorial
             {
                 this.args.overlayColour = args.overlayColour;
             }
+            if(args.allowManualControl != null)
+            {
+                this.args.allowManualControl = args.allowManualControl;
+            }
+            if(args.showTutorialOnce != null)
+            {
+                this.args.showTutorialOnce = args.showTutorialOnce;
+            }
+            if(!!args.tutorialIden)
+            {
+                this.args.tutorialIden = args.tutorialIden;
+            }
             
         }
         //clear all current steps
         this.steps = [];
         
         this.animationManager = new TutorialAnimationManager();
-        this.animationManager.initialise(this.args);
+        this.animationManager.initialise(this.args, () => {
+            if(localStorage && this.args.showTutorialOnce)
+            {
+                localStorage.setItem(this.args.tutorialIden, "true");
+            }
+            if(this.tutorialEnd != null)
+            {
+                this.tutorialEnd()
+            }
+    });
     }
 
     
 
-    public addStep(controlSelector: string|null, message: string, duration:number = 2, callback:(()=>Promise<void>)|null = null):void
+    public addStep(controlSelector: string|null, message: string, duration:number = 2, callback:()=>Promise<void>|null = null):void
     {
         const step = {
             control: controlSelector,
@@ -468,12 +586,17 @@ export class AnimatedTutorial
         this.steps.push(step);
     }
 
-    public run()
+    public run(): void
     {
-        if(this.animationManager != null)
+        if(localStorage && this.args.showTutorialOnce)
         {
-            this.animationManager.timeToNextStep = this.steps[0].durationS * 1000;
-            this.animationManager.run(this.steps);
+            const hasCompleted = localStorage.getItem(this.args.tutorialIden);
+            if(hasCompleted)
+            {
+                return;
+            }
         }
+        this.animationManager.timeToNextStep = this.steps[0].durationS * 1000;
+        this.animationManager.run(this.steps);
     }
 }
