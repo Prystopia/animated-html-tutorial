@@ -343,7 +343,7 @@ export class TutorialAnimationManager
             this.run(this.state)
         }
     }
-    private endTutorial(): void
+    public endTutorial(): void
     {
         if(this.args.allowSkip)
         {
@@ -697,6 +697,7 @@ export class AnimatedTutorial
             const hasCompleted = localStorage.getItem(this.args.tutorialIden);
             if(hasCompleted)
             {
+                this.animationManager.endTutorial();
                 return;
             }
         }

@@ -415,7 +415,6 @@ var TutorialAnimationManager = /** @class */ (function () {
                 setTimeout(function () { return _this.run(steps); }, (_j = (_h = this.args) === null || _h === void 0 ? void 0 : _h.frameInterval) !== null && _j !== void 0 ? _j : 0);
             }
             else {
-                console.log(this.isTransitioning);
                 this.isTransitioning = false;
             }
         }
@@ -559,26 +558,11 @@ var AnimatedTutorial = /** @class */ (function () {
             this.addStep(control, control.getAttribute("data-at-message"), duration);
         }
     };
-    // public addContainer(containerSelector: string|null):void
-    // {
-    //     var formControls = document.querySelectorAll(`${containerSelector} [data-at] `);
-    //     for(let i = 0; i < formControls.length; i++)
-    //     {
-    //         var control = formControls[i];
-    //         let duration: number | null = null;
-    //         const durAttr = control.getAttribute("data-at-duration");
-    //         if(!!durAttr)
-    //         {
-    //             duration = parseInt(durAttr)
-    //         }
-    //         console.log(control);
-    //         this.addStep(control, control.getAttribute("data-at-message"), duration);
-    //     }
-    // }
     AnimatedTutorial.prototype.run = function () {
         if (localStorage && this.args.showTutorialOnce) {
             var hasCompleted = localStorage.getItem(this.args.tutorialIden);
             if (hasCompleted) {
+                this.animationManager.endTutorial();
                 return;
             }
         }
