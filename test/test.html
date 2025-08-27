@@ -28,12 +28,26 @@
         </div>
         <div class="div-two"></div>
         <div class="div-three"></div>
+
+        <form id="frmTest">
+            <input type="text" placeholder="First text" data-at-message="Enter your first name here" data-at-duration="5">
+            <select data-at-message="Please select the type of query you have here">
+                <option>Item 1</option>
+                <option>Item 2</option>
+                <option>Item 3</option>
+            </select>
+            <input type="text" placeholder="Second text" data-at-message="Enter your second name here">
+            <input type="text" placeholder="Third text" data-at-message="Enter your phone number here, this allows us to contact you regarding your query">
+        </form>
+
         <script>
-            var tutorial = new AnimatedTutorial({allowManualControl: true});
-            tutorial.addStep(".div-one", "This is the first div", 10);
-            tutorial.addStep(".div-two", "This is the second div", 10);
-            tutorial.addStep(".div-three", "This is the third div", 10);
-            tutorial.addStep(".div-one .inner", "This is the inner div", 10);
+            var tutorial = new AnimatedTutorial({showTutorialOnce: false, allowSkip: false});
+            tutorial.addStep(".div-one", "This is the first div");
+            tutorial.addStep(".div-two", "This is the second div");
+            tutorial.addStep(".div-three", "This is the third div");
+            tutorial.addStep(".div-one .inner", "This is the inner div");
+            tutorial.addForm("#frmTest");
+
             tutorial.run();
         </script>
     </body>

@@ -9,8 +9,9 @@ var TutorialArgs = /** @class */ (function () {
         this.font = "19px Arial";
         this.overlayColour = "rgba(100,100,100,0.8)";
         this.showTutorialOnce = true;
-        this.tutorialIden = "prys-animated-tutorial-seen";
-        this.allowManualControl = true;
+        this.tutorialIden = "prys-at-seen-".concat(window.location.href);
+        this.allowSkip = false;
+        this.zIndex = "2";
     }
     return TutorialArgs;
 }());
@@ -19,7 +20,7 @@ var TutorialStep = /** @class */ (function () {
     function TutorialStep() {
         this.control = null;
         this.stepMessage = null;
-        this.durationS = 2;
+        this.durationS = null;
         this.callback = null;
     }
     return TutorialStep;
@@ -32,18 +33,21 @@ var TutorialDrawingManager = /** @class */ (function () {
         this.args = null;
         this.prevBounds = [];
         this.nextBounds = [];
+        this.skipBounds = [];
         this.nextCallback = null;
         this.prevCallback = null;
+        this.endCallback = null;
     }
-    TutorialDrawingManager.prototype.initialise = function (args, nextCallback, prevCallback) {
+    TutorialDrawingManager.prototype.initialise = function (args, nextCallback, prevCallback, endCallback) {
         var _this = this;
         this.args = args;
         this.nextCallback = nextCallback;
         this.prevCallback = prevCallback;
+        this.endCallback = endCallback;
         this.canvas = document.createElement("canvas");
         this.canvas.addEventListener("click", function (ev) { return _this.handleClick(ev); });
         //TODO - needs to be configurable to ensure we don't sit under existing elements
-        this.canvas.style.zIndex = "2";
+        this.canvas.style.zIndex = this.args.zIndex;
         this.canvas.style.position = "fixed";
         this.canvas.setAttribute("width", "".concat(window.innerWidth, "px"));
         this.canvas.setAttribute("height", "".concat(window.innerHeight, "px"));
@@ -72,6 +76,30 @@ var TutorialDrawingManager = /** @class */ (function () {
             this.ctx.beginPath();
             this.ctx.fillStyle = this.args.overlayColour;
             this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            if (this.args.allowSkip) {
+                this.ctx.save();
+                this.ctx.font = this.args.font.replace("19px", "50px");
+                var skipText = "Click here to close";
+                var textMetrics = this.ctx.measureText(skipText);
+                var width = textMetrics.width;
+                var x = (this.canvas.width - width) / 2;
+                var y = this.canvas.height - 100;
+                this.ctx.strokeStyle = this.ctx.fillStyle;
+                this.ctx.fillText(skipText, x, y);
+                this.ctx.beginPath();
+                this.ctx.moveTo(x - 20, y - 50);
+                this.ctx.lineTo(x + width + 20, y - 50);
+                this.ctx.lineTo(x + width + 20, y + 20);
+                this.ctx.lineTo(x - 20, y + 20);
+                this.ctx.closePath();
+                this.ctx.stroke();
+                //set the bounding box for click recognition
+                this.skipBounds[0] = x - 20; //topLeftX
+                this.skipBounds[1] = y - 50; // topLeftY
+                this.skipBounds[2] = width + 20; // width;
+                this.skipBounds[3] = 70; // height;
+                this.ctx.restore();
+            }
         }
     };
     TutorialDrawingManager.prototype.createCutoutBox = function (x, y, width, height) {
@@ -95,13 +123,20 @@ var TutorialDrawingManager = /** @class */ (function () {
         if (x > this.prevBounds[0] && x < this.prevBounds[0] + this.prevBounds[2]
             && y > this.prevBounds[1] && y < this.prevBounds[1] + this.prevBounds[3]) {
             this.prevCallback();
+            return;
         }
         if (x > this.nextBounds[0] && x < this.nextBounds[0] + this.nextBounds[2]
             && y > this.nextBounds[1] && y < this.nextBounds[1] + this.nextBounds[3]) {
             this.nextCallback();
+            return;
+        }
+        if (this.args.allowSkip && x > this.skipBounds[0] && x < this.skipBounds[0] + this.skipBounds[2]
+            && y > this.skipBounds[1] && y < this.skipBounds[1] + this.skipBounds[3]) {
+            this.endCallback();
+            return;
         }
     };
-    TutorialDrawingManager.prototype.drawMessage = function (x, y, message) {
+    TutorialDrawingManager.prototype.drawMessage = function (x, y, message, isManualStep) {
         var nextPrevWidth = 25;
         var maxWidth = 500;
         if (this.ctx != null && this.args != null) {
@@ -131,10 +166,9 @@ var TutorialDrawingManager = /** @class */ (function () {
                 //if only a single line of text, we may be able to reduce the width of the box
                 maxWidth = this.ctx.measureText(lines[0]).width + 20;
             }
-            if (this.args.allowManualControl) {
+            if (isManualStep) {
                 maxWidth += (nextPrevWidth * 2);
             }
-            //TODO - stop message covering item
             var textHeight = 25;
             var height = (textHeight * lines.length) + 25;
             this.ctx.save();
@@ -161,7 +195,7 @@ var TutorialDrawingManager = /** @class */ (function () {
             this.ctx.closePath();
             this.ctx.stroke();
             this.ctx.fill();
-            if (this.args.allowManualControl) {
+            if (isManualStep) {
                 this.ctx.fillStyle = "#000000";
                 this.ctx.moveTo(boxLeft + nextPrevWidth, boxHeight);
                 this.ctx.lineTo(boxLeft + nextPrevWidth, boxHeight + height);
@@ -172,11 +206,24 @@ var TutorialDrawingManager = /** @class */ (function () {
                 var leftOffset_1 = (nextPrevWidth - width) / 2;
                 var topOffset = (height - txtHeight);
                 this.ctx.fillText("<", boxLeft + leftOffset_1, boxHeight + topOffset);
+                this.ctx.save();
+                this.ctx.font = this.args.font.replace("19px", "10px");
+                var labelMetrics = this.ctx.measureText("Prev");
+                var labelWidth = labelMetrics.width;
+                var labelTxtHeight = labelMetrics.fontBoundingBoxAscent + labelMetrics.fontBoundingBoxDescent;
+                var leftLabelOffset = (nextPrevWidth - labelWidth) / 2;
+                var topLabelOffset = (height - labelTxtHeight);
+                this.ctx.fillText("Prev", boxLeft + leftLabelOffset, boxHeight + topLabelOffset);
+                this.ctx.restore();
                 this.ctx.moveTo((boxLeft + maxWidth) - nextPrevWidth, boxHeight);
                 this.ctx.lineTo((boxLeft + maxWidth) - nextPrevWidth, boxHeight + height);
                 this.ctx.stroke();
                 this.ctx.beginPath();
                 this.ctx.fillText(">", ((boxLeft + maxWidth) - nextPrevWidth) + leftOffset_1, boxHeight + topOffset);
+                this.ctx.save();
+                this.ctx.font = this.args.font.replace("19px", "10px");
+                this.ctx.fillText("Next", ((boxLeft + maxWidth) - nextPrevWidth) + leftLabelOffset, boxHeight + topLabelOffset);
+                this.ctx.restore();
                 //set the bounding box for click recognition
                 this.prevBounds[0] = boxLeft; //topLeftX
                 this.prevBounds[1] = boxHeight; // topLeftY
@@ -189,7 +236,7 @@ var TutorialDrawingManager = /** @class */ (function () {
             }
             //me.ctx.fillRect(x,y, 250, 150);
             this.ctx.beginPath();
-            var leftOffset = 10 + ((this.args.allowManualControl) ? nextPrevWidth : 0);
+            var leftOffset = 10 + ((isManualStep) ? nextPrevWidth : 0);
             this.ctx.fillStyle = "#000000";
             for (var i = 0; i < lines.length; i++) {
                 this.ctx.fillText(lines[i], boxLeft + leftOffset, boxHeight + 25 + (textHeight * i));
@@ -214,13 +261,12 @@ var TutorialDrawingManager = /** @class */ (function () {
     return TutorialDrawingManager;
 }());
 exports.TutorialDrawingManager = TutorialDrawingManager;
-//TODO - Add in fadein/fadeout animation rather than a transition
 var TutorialAnimationManager = /** @class */ (function () {
     function TutorialAnimationManager() {
         this.currentStep = 0;
         this.isTransitioning = false;
         this.timeToNext = 0;
-        this.timeToNextStep = 0;
+        this.timeToNextStep = null;
         this.args = new TutorialArgs();
         this.drawingManager = null;
         this.onEnd = null;
@@ -230,18 +276,41 @@ var TutorialAnimationManager = /** @class */ (function () {
         var _this = this;
         this.args = args;
         this.drawingManager = new TutorialDrawingManager();
-        this.drawingManager.initialise(args, function () { return _this.nextStep(); }, function () { return _this.prevStep(); });
+        this.drawingManager.initialise(args, function () { return _this.nextStep(); }, function () { return _this.prevStep(); }, function () { return _this.endTutorial(); });
         this.onEnd = onEndEvent;
     };
     TutorialAnimationManager.prototype.prevStep = function () {
-        if (this.currentStep > 0) {
+        if (this.currentStep > 0 && !this.isTransitioning) {
             this.currentStep -= 1;
             this.run(this.state);
         }
     };
+    TutorialAnimationManager.prototype.endTutorial = function () {
+        var _a;
+        if (this.args.allowSkip) {
+            (_a = this.drawingManager) === null || _a === void 0 ? void 0 : _a.destroy();
+            if (this.onEnd != null) {
+                this.onEnd();
+            }
+            return;
+        }
+    };
     TutorialAnimationManager.prototype.nextStep = function () {
-        this.timeToNextStep = 0;
-        this.run(this.state);
+        if (!this.isTransitioning) {
+            this.timeToNextStep = 0;
+            this.run(this.state);
+        }
+    };
+    TutorialAnimationManager.prototype.getControl = function (element) {
+        if (element instanceof Element) {
+            return element;
+        }
+        else if (!!element) {
+            return document.querySelector(element);
+        }
+        else {
+            return null;
+        }
     };
     TutorialAnimationManager.prototype.scrollToElement = function (control, offset) {
         /*const visibleRange = (this.elementToFollow.nativeElement.clientHeight / this.elementToFollow.nativeElement.scrollHeight) * 100;
@@ -302,7 +371,7 @@ var TutorialAnimationManager = /** @class */ (function () {
         var step = steps[this.currentStep];
         var x = 0, y = 0, width = 0, height = 0, mesX = 0, mesY = 0;
         if (step.control != null) {
-            var control = document.querySelector(step.control);
+            var control = this.getControl(step.control);
             if (control != null) {
                 var scrollAmount = this.scrollToElement(control, 50);
                 var bounds = control.getBoundingClientRect();
@@ -328,15 +397,17 @@ var TutorialAnimationManager = /** @class */ (function () {
         //if we are moving from one item to the next
         if (this.isTransitioning) {
             this.timeToNext -= (_c = (_b = this.args) === null || _b === void 0 ? void 0 : _b.frameInterval) !== null && _c !== void 0 ? _c : 0;
+            //console.log("Transitioning", this.timeToNext, this.args.transitionTimeS);
             if (this.timeToNext > 0) {
-                var percentage = ((_e = (_d = this.args) === null || _d === void 0 ? void 0 : _d.transitionTimeS) !== null && _e !== void 0 ? _e : 0 - this.timeToNext) / ((_g = (_f = this.args) === null || _f === void 0 ? void 0 : _f.transitionTimeS) !== null && _g !== void 0 ? _g : 1);
+                var percentage = (((_e = (_d = this.args) === null || _d === void 0 ? void 0 : _d.transitionTimeS) !== null && _e !== void 0 ? _e : 0) - this.timeToNext) / ((_g = (_f = this.args) === null || _f === void 0 ? void 0 : _f.transitionTimeS) !== null && _g !== void 0 ? _g : 1);
                 //TODO - add check for 0 index - shouldn't happen as we can't transition before having at least one step
                 var previousStep = steps[this.currentStep - 1];
-                var previousControl = previousStep.control ? document.querySelector(previousStep.control) : null;
+                var previousControl = previousStep.control ? this.getControl(previousStep.control) : null;
                 var prevX = previousControl ? previousControl.getBoundingClientRect().left : (window.innerWidth / 2);
                 var prevY = previousControl ? previousControl.getBoundingClientRect().top : (window.innerHeight / 2);
-                var x = this.lerp(prevX, x, percentage);
-                var y = this.lerp(prevY, y, percentage);
+                x = this.lerp(prevX, x, percentage);
+                y = this.lerp(prevY, y, percentage);
+                //console.log("Position", x, y, prevX, prevY, percentage);
                 var prevWidth = previousControl ? previousControl.offsetWidth / 2 : 10;
                 var prevHeight = previousControl ? previousControl.offsetHeight / 2 : 10;
                 width = this.lerp(prevWidth, width, percentage);
@@ -344,6 +415,7 @@ var TutorialAnimationManager = /** @class */ (function () {
                 setTimeout(function () { return _this.run(steps); }, (_j = (_h = this.args) === null || _h === void 0 ? void 0 : _h.frameInterval) !== null && _j !== void 0 ? _j : 0);
             }
             else {
+                console.log(this.isTransitioning);
                 this.isTransitioning = false;
             }
         }
@@ -366,8 +438,8 @@ var TutorialAnimationManager = /** @class */ (function () {
             //const mesY = (window.innerHeight / 2) - 150;
             //const messX = (window.innerWidth / 2) - 250;
             //this.drawingManager.drawMessage(x + ((width + 5) * 2), y, step.stepMessage);
-            (_m = this.drawingManager) === null || _m === void 0 ? void 0 : _m.drawMessage(mesX, mesY, (_o = step === null || step === void 0 ? void 0 : step.stepMessage) !== null && _o !== void 0 ? _o : "");
-            if (this.timeToNextStep <= 0) {
+            (_m = this.drawingManager) === null || _m === void 0 ? void 0 : _m.drawMessage(mesX, mesY, (_o = step === null || step === void 0 ? void 0 : step.stepMessage) !== null && _o !== void 0 ? _o : "", this.timeToNextStep == null);
+            if (this.timeToNextStep != null && this.timeToNextStep <= 0) {
                 if (steps[this.currentStep].callback != null) {
                     steps[this.currentStep].callback().then(function () {
                         var _a, _b, _c, _d;
@@ -376,7 +448,7 @@ var TutorialAnimationManager = /** @class */ (function () {
                         if (_this.currentStep < steps.length) {
                             _this.isTransitioning = true;
                             _this.timeToNext = (_a = _this.args.transitionTimeS) !== null && _a !== void 0 ? _a : 0;
-                            _this.timeToNextStep = steps[_this.currentStep].durationS * 1000;
+                            _this.timeToNextStep = steps[_this.currentStep].durationS != null ? steps[_this.currentStep].durationS * 1000 : null;
                             setTimeout(function () { return _this.run(steps); }, (_c = (_b = _this.args) === null || _b === void 0 ? void 0 : _b.frameInterval) !== null && _c !== void 0 ? _c : 0);
                         }
                         else {
@@ -391,15 +463,13 @@ var TutorialAnimationManager = /** @class */ (function () {
                     });
                 }
             }
+            else if (this.timeToNextStep == null) {
+                this.state = steps;
+            }
             else {
                 //No need to render all frames, just keep the message on screen for the specified time
-                if (!this.args.allowManualControl) {
-                    setTimeout(function () { return _this.run(steps); }, this.timeToNextStep);
-                    this.timeToNextStep = 0;
-                }
-                else {
-                    this.state = steps;
-                }
+                setTimeout(function () { return _this.run(steps); }, this.timeToNextStep);
+                this.timeToNextStep = 0;
             }
         }
     };
@@ -412,8 +482,6 @@ exports.TutorialAnimationManager = TutorialAnimationManager;
 var AnimatedTutorial = /** @class */ (function () {
     function AnimatedTutorial(args) {
         if (args === void 0) { args = null; }
-        //TODO - add local storage check to se whether user has already completed the tutorial based on the provided id or route
-        //TODO - allow styling of the items e.g. font to use etc
         this.steps = [];
         this.args = null;
         this.animationManager = null;
@@ -440,21 +508,24 @@ var AnimatedTutorial = /** @class */ (function () {
             if (!!args.overlayColour) {
                 this.args.overlayColour = args.overlayColour;
             }
-            if (args.allowManualControl != null) {
-                this.args.allowManualControl = args.allowManualControl;
-            }
             if (args.showTutorialOnce != null) {
                 this.args.showTutorialOnce = args.showTutorialOnce;
             }
             if (!!args.tutorialIden) {
                 this.args.tutorialIden = args.tutorialIden;
             }
+            if (args.allowSkip != null) {
+                this.args.allowSkip = args.allowSkip;
+            }
+            if (!!args.zIndex) {
+                this.args.zIndex = args.zIndex;
+            }
         }
         //clear all current steps
         this.steps = [];
         this.animationManager = new TutorialAnimationManager();
         this.animationManager.initialise(this.args, function () {
-            if (localStorage && _this.args.showTutorialOnce) {
+            if (localStorage) {
                 localStorage.setItem(_this.args.tutorialIden, "true");
             }
             if (_this.tutorialEnd != null) {
@@ -463,7 +534,7 @@ var AnimatedTutorial = /** @class */ (function () {
         });
     };
     AnimatedTutorial.prototype.addStep = function (controlSelector, message, duration, callback) {
-        if (duration === void 0) { duration = 2; }
+        if (duration === void 0) { duration = null; }
         if (callback === void 0) { callback = null; }
         var step = {
             control: controlSelector,
@@ -476,6 +547,34 @@ var AnimatedTutorial = /** @class */ (function () {
         }
         this.steps.push(step);
     };
+    AnimatedTutorial.prototype.addForm = function (formSelector) {
+        var formControls = document.querySelectorAll("".concat(formSelector, " input, ").concat(formSelector, " select, ").concat(formSelector, " textarea, ").concat(formSelector, " button"));
+        for (var i = 0; i < formControls.length; i++) {
+            var control = formControls[i];
+            var duration = null;
+            var durAttr = control.getAttribute("data-at-duration");
+            if (!!durAttr) {
+                duration = parseInt(durAttr);
+            }
+            this.addStep(control, control.getAttribute("data-at-message"), duration);
+        }
+    };
+    // public addContainer(containerSelector: string|null):void
+    // {
+    //     var formControls = document.querySelectorAll(`${containerSelector} [data-at] `);
+    //     for(let i = 0; i < formControls.length; i++)
+    //     {
+    //         var control = formControls[i];
+    //         let duration: number | null = null;
+    //         const durAttr = control.getAttribute("data-at-duration");
+    //         if(!!durAttr)
+    //         {
+    //             duration = parseInt(durAttr)
+    //         }
+    //         console.log(control);
+    //         this.addStep(control, control.getAttribute("data-at-message"), duration);
+    //     }
+    // }
     AnimatedTutorial.prototype.run = function () {
         if (localStorage && this.args.showTutorialOnce) {
             var hasCompleted = localStorage.getItem(this.args.tutorialIden);
@@ -483,7 +582,7 @@ var AnimatedTutorial = /** @class */ (function () {
                 return;
             }
         }
-        this.animationManager.timeToNextStep = this.steps[0].durationS * 1000;
+        this.animationManager.timeToNextStep = this.steps[0].durationS != null ? this.steps[0].durationS * 1000 : null;
         this.animationManager.run(this.steps);
     };
     return AnimatedTutorial;

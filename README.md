@@ -7,11 +7,20 @@ _User friendly tutorials and help documentation_
 ![Tutorial in action](https://prystopiastorage.blob.core.windows.net/media/AnimatedTutorial.gif)
 
 ## Usage
-A tutorial can be created in 3 steps:
+A basic tutorial can be created in 3 steps:
 
 1. `const tutorial = new AnimatedTutorial(); //Create a new instance of the tutorial`
 1. `tutorial.addStep(".test-control", "Text to display about Test control", 10); //Add a step to the tutorial`
 1. `tutorial.run(); //instantly runs the tutorial`
+
+Another approach exists where a tutorial can be created directly from a form, to achieve this replace step 2 above with the following line, passing in the selector for the form:
+
+`tutorial.addForm("#frmTest");`
+
+In order to specify the message and duration for each step, each component on the form can detail this information using the following attributes
+
+1. `data-at-message="Example message" //defines the message to display for this control`
+1. `data-at-duration="10"; //defines the duration for this control, this value is in seconds`
 
 ## Config
 
@@ -22,14 +31,14 @@ Config values can be passed into the `TutorialManager` class to change the look 
 1. `cutout` - Shape used to highlight the elements on the screen.  Accepts one of two values, "Box" and "Oval", defaults to "Box";
 1. `font` - Font used to display messages to the user, defaults to "19px Arial";
 1. `overlayColour` - String value representing the colour the overlay should be, defaults to "rgba(100,100,100,0.8)";
+1. `showTutorialOnce` - If set to true, checks for the existence of the tutorial key in Local Storage, skipping the tutorial if it is present.  Defaults to true
+1. `tutorialIden` - If specified, sets a unique identifier for the tutorial to be stored in Local Storage as part of the key.  Defaults to "prys-at-seen" + current Url.
+1. `allowSkip` - If true, adds a skip button to the bottom of the tutorial, allowing the user to close at any point.  This will not specify the Local Storage field as detailed above.
+1.  `zIndex` - Specifies the defaulty z-index for the tutorial to display at, ensuring that it can cover any elements.
 
 
 ## Future plans
 * Accessible help documentation for individual controls, without going through the entire tutorial
-* Auto recognition of whether a user has already seen the tutorial for a particular page
 * Different animation types
 * Addition of styling options to the displayed messages
-* Auto initialise from Forms
-* Optional "Skip" and "Next" buttons to allow users to navigate through the process
 * Internationalisation features
-
