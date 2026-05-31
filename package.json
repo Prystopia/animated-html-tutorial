@@ -1,5 +1,5 @@
 {
-  "name": "animated-html-tutorial",
+  "name": "animated-tutorial",
   "version": "0.1.0",
   "description": "HTML5 canvas-based animated tutorials and help documentation for any web app",
   "keywords": [
@@ -18,20 +18,20 @@
     "url": "git+https://github.com/Prystopia/animated-html-tutorial.git"
   },
   "files": [
-    "dist/animated-tutorial.js",
-    "dist/animated-tutorial.d.ts"
+    "dist/src/animated-tutorial.js",
+    "dist/src/animated-tutorial.d.ts"
   ],
   "exports": {
     ".": {
-      "require": "./dist/animated-tutorial.js",
-      "types": "./dist/animated-tutorial.d.ts"
+      "require": "./dist/src/animated-tutorial.js",
+      "types": "./dist/src/animated-tutorial.d.ts"
     }
   },
   "license": "MIT",
   "author": "prystopia",
   "type": "commonjs",
-  "main": "dist/animated-tutorial.js",
-  "types": "dist/animated-tutorial.d.ts",
+  "main": "dist/src/animated-tutorial.js",
+  "types": "dist/src/animated-tutorial.d.ts",
   "scripts": {
     "build-prod": "tsc -p src/tsconfig.json && esbuild src/animated-tutorial.ts --bundle --minify --keep-names --format=cjs --outfile=dist/src/animated-tutorial.js && esbuild src/browser-entry.ts --bundle --minify --keep-names --format=iife --outfile=dist/animated-tutorial.js",
     "build-dev": "tsc -p src/tsconfig.dev.json"
