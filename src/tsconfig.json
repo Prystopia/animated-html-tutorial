@@ -11,6 +11,6 @@
          "es5",
          "es6"
       ],
-      "outDir": "../dist"
+      "outDir": "../dist/src"
    }
 }

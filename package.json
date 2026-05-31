@@ -33,7 +33,7 @@
   "main": "dist/animated-tutorial.js",
   "types": "dist/animated-tutorial.d.ts",
   "scripts": {
-    "build-prod": "tsc -p src/tsconfig.json && esbuild src/animated-tutorial.ts --bundle --minify --keep-names --format=cjs --outfile=dist/animated-tutorial.js && esbuild src/browser-entry.ts --bundle --minify --keep-names --format=iife --outfile=dist/dist.js",
+    "build-prod": "tsc -p src/tsconfig.json && esbuild src/animated-tutorial.ts --bundle --minify --keep-names --format=cjs --outfile=dist/src/animated-tutorial.js && esbuild src/browser-entry.ts --bundle --minify --keep-names --format=iife --outfile=dist/animated-tutorial.js",
     "build-dev": "tsc -p src/tsconfig.dev.json"
   },
   "devDependencies": {
