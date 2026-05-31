@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Animated Tutorial — Demo</title>
+    <script src="../dist/dist.js"></script>
+    <style>
+        *,
+        *::before,
+        *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
+            background: #f0f2f5;
+            color: #1a1a2e;
+            min-height: 100vh;
+        }
+
+        header {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 0 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            height: 60px;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+        }
+
+        .logo {
+            font-size: 1rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .logo span {
+            color: #4f8ef7;
+        }
+
+        .logo-tag {
+            font-size: 0.7rem;
+            font-weight: 400;
+            color: #6b7280;
+            margin-left: 0.4rem;
+        }
+
+        header nav a {
+            color: #9ca3af;
+            text-decoration: none;
+            margin-left: 1.5rem;
+            font-size: 0.85rem;
+            transition: color 0.15s;
+        }
+
+        header nav a:hover {
+            color: #fff;
+        }
+
+        .page-wrapper {
+            max-width: 980px;
+            margin: 2rem auto;
+            padding: 0 1.5rem;
+        }
+
+        .page-eyebrow {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+            background: #eef2ff;
+            color: #4f46e5;
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            padding: 0.2rem 0.65rem;
+            border-radius: 99px;
+            margin-bottom: 0.85rem;
+        }
+
+        .page-eyebrow::before {
+            content: '';
+            width: 6px;
+            height: 6px;
+            background: #4f46e5;
+            border-radius: 50%;
+        }
+
+        .page-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            font-size: 0.875rem;
+            margin-bottom: 2rem;
+        }
+
+        /* ── Stat cards row ── */
+        .cards-row {
+            display: flex;
+            gap: 1.25rem;
+            margin-bottom: 2rem;
+        }
+
+        .div-one,
+        .div-two,
+        .div-three {
+            flex: 1;
+            background: #fff;
+            border-radius: 10px;
+            padding: 1.25rem 1.5rem 1.25rem;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+            min-height: 130px;
+        }
+
+        .card-label {
+            font-size: 0.72rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: #9ca3af;
+            margin-bottom: 0.4rem;
+        }
+
+        .card-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #1a1a2e;
+            line-height: 1;
+        }
+
+        .card-footer {
+            font-size: 0.78rem;
+            color: #6b7280;
+            margin-top: 0.75rem;
+        }
+
+        .card-footer.up {
+            color: #10b981;
+        }
+
+        .card-footer.down {
+            color: #ef4444;
+        }
+
+        /* ── Inner notification badge ── */
+        .inner {
+            width: 34px;
+            height: 34px;
+            background: #ef4444;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+            font-size: 0.78rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        /* ── Form section ── */
+        .form-section {
+            background: #fff;
+            border-radius: 10px;
+            padding: 2rem;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+        }
+
+        .form-section h2 {
+            font-size: 1.05rem;
+            font-weight: 700;
+            margin-bottom: 0.25rem;
+        }
+
+        .form-section p {
+            color: #6b7280;
+            font-size: 0.85rem;
+            margin-bottom: 1.5rem;
+        }
+
+        #frmTest {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.875rem;
+        }
+
+        #frmTest input[type="text"],
+        #frmTest select {
+            width: 100%;
+            padding: 0.6rem 0.875rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 7px;
+            font-size: 0.875rem;
+            font-family: inherit;
+            background: #f9fafb;
+            color: #1a1a2e;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        #frmTest input[type="text"]:focus,
+        #frmTest select:focus {
+            border-color: #4f8ef7;
+            box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.15);
+            background: #fff;
+        }
+
+        #frmTest select {
+            grid-column: span 2;
+        }
+    </style>
+</head>
+
+<body>
+    <header>
+        <div class="logo">Animated<span>Tutorial</span><span class="logo-tag">demo</span></div>
+        <nav>
+            <a href="#">Dashboard</a>
+        </nav>
+    </header>
+
+    <div class="page-wrapper">
+        <div class="page-eyebrow">Interactive Demo</div>
+        <h1 class="page-title">Example Dashboard</h1>
+        <p class="page-subtitle">This demo illustrates how Animated Tutorial can help to guide users through your
+            application.</p>
+
+        <div class="cards-row">
+            <div class="div-one">
+                <div>
+                    <div class="card-label">Notifications</div>
+                    <div class="card-value">12</div>
+                    <div class="card-footer down">3 require your attention</div>
+                </div>
+                <div class="inner">3</div>
+            </div>
+            <div class="div-two">
+                <div class="card-label">Active Users</div>
+                <div class="card-value">1,284</div>
+                <div class="card-footer up">+8.4% this week</div>
+            </div>
+            <div class="div-three">
+                <div class="card-label">Pending Tasks</div>
+                <div class="card-value">7</div>
+                <div class="card-footer down">2 overdue</div>
+            </div>
+        </div>
+
+        <div class="form-section">
+            <h2>Contact Support</h2>
+            <p>Fill in the form below and we'll be in touch shortly.</p>
+
+            <form id="frmTest">
+                <input type="text" placeholder="First name" data-at-message="Enter your first name here"
+                    data-at-duration="5">
+                <select data-at-message="Please select the type of query you have here">
+                    <option>Item 1</option>
+                    <option>Item 2</option>
+                    <option>Item 3</option>
+                </select>
+                <input type="text" placeholder="Last name" data-at-message="Enter your second name here">
+                <input type="text" placeholder="Phone number"
+                    data-at-message="Enter your phone number here, this allows us to contact you regarding your query">
+            </form>
+        </div>
+    </div>
+
+    <script>
+        var tutorial = new AnimatedTutorial({ showTutorialOnce: false, allowSkip: true });
+        tutorial.addStep(".div-one", "This is the first div");
+        tutorial.addStep(".div-two", "This is the second div");
+        tutorial.addStep(".div-three", "This is the third div");
+        tutorial.addStep(".div-one .inner", "This is the inner div");
+        tutorial.addForm("#frmTest");
+        tutorial.addStep(null, "This is a brief example on how to use the system, give it a go and give us a shout if you get stuck");
+        tutorial.run();
+    </script>
+</body>
+
+</html>
