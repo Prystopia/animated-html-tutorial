@@ -4,7 +4,7 @@ _User friendly tutorials and help documentation_
 ## Introduction
 `Animated Tutorial` is a HTML5 canvas based project, which aims to allow the easy addition of user tutorials into any HTML web app.  Using it you can quickly add customised tutorials and help documentation to any application to help improve user friendliness and engagement while reducing support requests.  Currently, the project is a little basic, however, it should still be useful in a range of scenarios, and if not, feel free to contribute.
 
-![Tutorial in action](/demo/animated-tutorial.gif)
+![Tutorial in action](/docs/animated-tutorial.gif)
 
 ## Installation
 
