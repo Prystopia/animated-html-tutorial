@@ -62,12 +62,256 @@
             color: #fff;
         }
 
-        .page-wrapper {
-            max-width: 980px;
+        /* ── Two-column layout ── */
+        .layout-wrapper {
+            display: flex;
+            gap: 1.5rem;
+            max-width: 1280px;
             margin: 2rem auto;
             padding: 0 1.5rem;
+            align-items: flex-start;
         }
 
+        .main-content {
+            flex: 1;
+            min-width: 0;
+        }
+
+        /* ── Options panel ── */
+        .options-panel {
+            width: 280px;
+            flex-shrink: 0;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.07);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+
+        .options-panel-header {
+            background: #1a1a2e;
+            color: #fff;
+            padding: 1rem 1.25rem;
+        }
+
+        .options-panel-header h2 {
+            font-size: 0.9rem;
+            font-weight: 700;
+            letter-spacing: 0.02em;
+        }
+
+        .options-panel-header p {
+            font-size: 0.75rem;
+            color: #9ca3af;
+            margin-top: 0.2rem;
+        }
+
+        .options-panel-body {
+            padding: 1.25rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.1rem;
+            flex: 1;
+        }
+
+        .option-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+        }
+
+        .option-group label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .option-group input[type="number"],
+        .option-group select {
+            width: 100%;
+            padding: 0.55rem 0.75rem;
+            border: 1px solid #e5e7eb;
+            border-radius: 7px;
+            font-size: 0.85rem;
+            font-family: inherit;
+            background: #f9fafb;
+            color: #1a1a2e;
+            outline: none;
+            transition: border-color 0.15s, box-shadow 0.15s;
+        }
+
+        .option-group input[type="color"] {
+            height: 38px;
+            padding: 2px 4px;
+            border: 1px solid #e5e7eb;
+            border-radius: 7px;
+            background: #f9fafb;
+            cursor: pointer;
+        }
+
+        .color-opacity-row {
+            display: flex;
+            gap: 0.6rem;
+            align-items: center;
+        }
+
+        .color-opacity-row input[type="color"] {
+            width: 52px;
+            flex-shrink: 0;
+        }
+
+        .opacity-field {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .opacity-field input[type="range"] {
+            flex: 1;
+            accent-color: #4f8ef7;
+            cursor: pointer;
+        }
+
+        .opacity-value {
+            font-size: 0.78rem;
+            color: #6b7280;
+            width: 2.2rem;
+            text-align: right;
+            flex-shrink: 0;
+        }
+
+        .option-group input[type="number"]:focus,
+        .option-group select:focus {
+            border-color: #4f8ef7;
+            box-shadow: 0 0 0 3px rgba(79, 142, 247, 0.15);
+            background: #fff;
+        }
+
+        .option-group input[type="number"].invalid,
+        .option-group select.invalid {
+            border-color: #ef4444;
+            box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12);
+        }
+
+        .option-hint {
+            font-size: 0.72rem;
+            color: #9ca3af;
+        }
+
+        .option-error {
+            font-size: 0.72rem;
+            color: #ef4444;
+            display: none;
+        }
+
+        .option-error.visible {
+            display: block;
+        }
+
+        /* ── Toggle switch ── */
+        .toggle-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .toggle-row .toggle-label {
+            font-size: 0.78rem;
+            font-weight: 600;
+            color: #374151;
+        }
+
+        .toggle-row .toggle-sub {
+            font-size: 0.71rem;
+            color: #9ca3af;
+            margin-top: 0.1rem;
+        }
+
+        .toggle-switch {
+            position: relative;
+            width: 38px;
+            height: 22px;
+            flex-shrink: 0;
+        }
+
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            inset: 0;
+            background: #d1d5db;
+            border-radius: 99px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .toggle-slider::before {
+            content: '';
+            position: absolute;
+            width: 16px;
+            height: 16px;
+            left: 3px;
+            top: 3px;
+            background: #fff;
+            border-radius: 50%;
+            transition: transform 0.2s;
+        }
+
+        .toggle-switch input:checked+.toggle-slider {
+            background: #4f8ef7;
+        }
+
+        .toggle-switch input:checked+.toggle-slider::before {
+            transform: translateX(16px);
+        }
+
+        .divider {
+            height: 1px;
+            background: #f3f4f6;
+        }
+
+        /* ── Run button ── */
+        .options-panel-footer {
+            padding: 1.25rem;
+            border-top: 1px solid #f3f4f6;
+        }
+
+        #btnRun {
+            width: 100%;
+            padding: 0.75rem;
+            background: #4f8ef7;
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            font-family: inherit;
+            cursor: pointer;
+            letter-spacing: 0.02em;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        #btnRun:hover {
+            background: #3b7de8;
+        }
+
+        #btnRun:active {
+            transform: scale(0.98);
+        }
+
+        #btnRun:disabled {
+            background: #93c5fd;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* ── Page heading ── */
         .page-eyebrow {
             display: inline-flex;
             align-items: center;
@@ -219,6 +463,16 @@
         #frmTest select {
             grid-column: span 2;
         }
+
+        @media (max-width: 860px) {
+            .layout-wrapper {
+                flex-direction: column;
+            }
+
+            .options-panel {
+                width: 100%;
+            }
+        }
     </style>
 </head>
 
@@ -230,61 +484,189 @@
         </nav>
     </header>
 
-    <div class="page-wrapper">
-        <div class="page-eyebrow">Interactive Demo</div>
-        <h1 class="page-title">Example Dashboard</h1>
-        <p class="page-subtitle">This demo illustrates how Animated Tutorial can help to guide users through your
-            application.</p>
+    <div class="layout-wrapper">
+        <!-- ── Main dashboard content ── -->
+        <div class="main-content">
+            <div class="page-eyebrow">Interactive Demo</div>
+            <h1 class="page-title">Example Dashboard</h1>
+            <p class="page-subtitle">This demo illustrates how Animated Tutorial can help to guide users through your
+                application.</p>
 
-        <div class="cards-row">
-            <div class="div-one">
-                <div>
-                    <div class="card-label">Notifications</div>
-                    <div class="card-value">12</div>
-                    <div class="card-footer down">3 require your attention</div>
+            <div class="cards-row">
+                <div class="div-one">
+                    <div>
+                        <div class="card-label">Notifications</div>
+                        <div class="card-value">12</div>
+                        <div class="card-footer down">3 require your attention</div>
+                    </div>
+                    <div class="inner">3</div>
                 </div>
-                <div class="inner">3</div>
+                <div class="div-two">
+                    <div class="card-label">Active Users</div>
+                    <div class="card-value">1,284</div>
+                    <div class="card-footer up">+8.4% this week</div>
+                </div>
+                <div class="div-three">
+                    <div class="card-label">Pending Tasks</div>
+                    <div class="card-value">7</div>
+                    <div class="card-footer down">2 overdue</div>
+                </div>
             </div>
-            <div class="div-two">
-                <div class="card-label">Active Users</div>
-                <div class="card-value">1,284</div>
-                <div class="card-footer up">+8.4% this week</div>
-            </div>
-            <div class="div-three">
-                <div class="card-label">Pending Tasks</div>
-                <div class="card-value">7</div>
-                <div class="card-footer down">2 overdue</div>
+
+            <div class="form-section">
+                <h2>Contact Support</h2>
+                <p>Fill in the form below and we'll be in touch shortly.</p>
+
+                <form id="frmTest">
+                    <input type="text" placeholder="First name" data-at-message="Enter your first name here"
+                        data-at-duration="5">
+                    <select data-at-message="Please select the type of query you have here">
+                        <option>Item 1</option>
+                        <option>Item 2</option>
+                        <option>Item 3</option>
+                    </select>
+                    <input type="text" placeholder="Last name" data-at-message="Enter your second name here">
+                    <input type="text" placeholder="Phone number"
+                        data-at-message="Enter your phone number here, this allows us to contact you regarding your query">
+                </form>
             </div>
         </div>
 
-        <div class="form-section">
-            <h2>Contact Support</h2>
-            <p>Fill in the form below and we'll be in touch shortly.</p>
+        <!-- ── Options panel ── -->
+        <aside class="options-panel">
+            <div class="options-panel-header">
+                <h2>Tutorial Options</h2>
+                <p>Configure and run the tutorial</p>
+            </div>
 
-            <form id="frmTest">
-                <input type="text" placeholder="First name" data-at-message="Enter your first name here"
-                    data-at-duration="5">
-                <select data-at-message="Please select the type of query you have here">
-                    <option>Item 1</option>
-                    <option>Item 2</option>
-                    <option>Item 3</option>
-                </select>
-                <input type="text" placeholder="Last name" data-at-message="Enter your second name here">
-                <input type="text" placeholder="Phone number"
-                    data-at-message="Enter your phone number here, this allows us to contact you regarding your query">
-            </form>
-        </div>
+            <div class="options-panel-body">
+
+                <div class="option-group">
+                    <div class="toggle-row">
+                        <div>
+                            <div class="toggle-label">Allow Skip</div>
+                            <div class="toggle-sub">Let users dismiss the tutorial early</div>
+                        </div>
+                        <label class="toggle-switch">
+                            <input type="checkbox" id="optAllowSkip" checked>
+                            <span class="toggle-slider"></span>
+                        </label>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="option-group">
+                    <label for="optStepDuration">Default Step Duration (seconds)</label>
+                    <input type="number" id="optStepDuration" value="0.4" min="0.1" max="10" step="0.1">
+                    <span class="option-hint">How long each step is shown (1 – 60 s)</span>
+                    <span class="option-error" id="errStepDuration">Must be a whole number between 1 and 60.</span>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="option-group">
+                    <label>Highlight Colour &amp; Opacity</label>
+                    <div class="color-opacity-row">
+                        <input type="color" id="optHighlightColour" value="#4f8ef7">
+                        <div class="opacity-field">
+                            <input type="range" id="optHighlightOpacity" min="0" max="1" step="0.05" value="0.7">
+                            <span class="opacity-value" id="highlightOpacityVal">0.7</span>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="divider"></div>
+
+                <div class="option-group">
+                    <label>Overlay Colour &amp; Opacity</label>
+                    <div class="color-opacity-row">
+                        <input type="color" id="optOverlayColour" value="#0f172a">
+                        <div class="opacity-field">
+                            <input type="range" id="optOverlayOpacity" min="0" max="1" step="0.05" value="0.6">
+                            <span class="opacity-value" id="overlayOpacityVal">0.6</span>
+                        </div>
+                    </div>
+                    <span class="option-hint">Background overlay colour and opacity</span>
+                </div>
+            </div>
+
+            <div class="options-panel-footer">
+                <button id="btnRun">Run Tutorial</button>
+            </div>
+        </aside>
     </div>
 
     <script>
-        var tutorial = new AnimatedTutorial({ showTutorialOnce: false, allowSkip: true });
-        tutorial.addStep(".div-one", "This is the first div");
-        tutorial.addStep(".div-two", "This is the second div");
-        tutorial.addStep(".div-three", "This is the third div");
-        tutorial.addStep(".div-one .inner", "This is the inner div");
-        tutorial.addForm("#frmTest");
-        tutorial.addStep(null, "This is a brief example on how to use the system, give it a go and give us a shout if you get stuck");
-        tutorial.run();
+        function alphaHex(opacity) {
+            return Math.round(parseFloat(opacity) * 255).toString(16).padStart(2, '0');
+        }
+
+        // Keep opacity labels in sync with their sliders
+        document.getElementById('optHighlightOpacity').addEventListener('input', function () {
+            document.getElementById('highlightOpacityVal').textContent = this.value;
+        });
+        document.getElementById('optOverlayOpacity').addEventListener('input', function () {
+            document.getElementById('overlayOpacityVal').textContent = this.value;
+        });
+
+        function setError(inputEl, errorEl, msg) {
+            inputEl.classList.add('invalid');
+            errorEl.textContent = msg;
+            errorEl.classList.add('visible');
+        }
+
+        function clearError(inputEl, errorEl) {
+            inputEl.classList.remove('invalid');
+            errorEl.classList.remove('visible');
+        }
+
+        function validateOptions() {
+            var valid = true;
+
+            var durationEl = document.getElementById('optStepDuration');
+            var durationErr = document.getElementById('errStepDuration');
+            var duration = parseFloat(durationEl.value);
+            if (!durationEl.value.trim() || isNaN(duration) || duration < 0.1 || duration > 10 || String(duration) !== durationEl.value.trim()) {
+                setError(durationEl, durationErr, 'Must be a whole number between 0.1 and 10.');
+                valid = false;
+            } else {
+                clearError(durationEl, durationErr);
+            }
+
+            return valid;
+        }
+
+        // Clear error as the user types
+        document.getElementById('optStepDuration').addEventListener('input', function () {
+            this.classList.remove('invalid');
+            document.getElementById('errStepDuration').classList.remove('visible');
+        });
+
+        document.getElementById('btnRun').addEventListener('click', function () {
+            if (!validateOptions()) return;
+
+            var allowSkip = document.getElementById('optAllowSkip').checked;
+            var stepDuration = parseFloat(document.getElementById('optStepDuration').value);
+            var highlightColour = document.getElementById('optHighlightColour').value + alphaHex(document.getElementById('optHighlightOpacity').value);
+            var overlayColour = document.getElementById('optOverlayColour').value + alphaHex(document.getElementById('optOverlayOpacity').value);
+
+            var tutorial = new AnimatedTutorial({
+                showTutorialOnce: false,
+                allowSkip: allowSkip,
+                transitionTimeMS: stepDuration * 1000,
+                highlightColour: highlightColour,
+                overlayColour: overlayColour,
+            });
+
+            tutorial.addStep(".div-one", "This is the first div");
+            tutorial.addStep(".div-two", "This is the second div");
+            tutorial.addStep(".div-three", "This is the third div");
+            tutorial.addStep(".div-one .inner", "This is the inner div");
+            tutorial.addForm("#frmTest");
+            tutorial.addStep(null, "This is a brief example on how to use the system, give it a go and give us a shout if you get stuck");
+            tutorial.run();
+        });
     </script>
 </body>
 

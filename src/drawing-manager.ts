@@ -41,17 +41,6 @@ export class TutorialDrawingManager {
         }
     }
 
-    public createArc(x: number, y: number, rad: number): void {
-        if (this.ctx != null) {
-            this.ctx.beginPath();
-            this.ctx.arc(x, y, rad, 0, 2 * Math.PI)
-            this.ctx.stroke();
-            this.ctx.clip();
-            this.clear();
-            this.ctx.restore();
-        }
-    }
-
     public drawBackground(): void {
         this.clear();
         if (this.ctx != null && this.canvas != null && this.args != null) {

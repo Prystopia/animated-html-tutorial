@@ -198,13 +198,7 @@ export class TutorialAnimationManager {
         }
 
         if (x && y && width && height) {
-
-            if (this.args.cutout == "Box") {
-                this.drawingManager?.createCutoutBox(x, y, width * 2, height * 2);
-            }
-            else {
-                this.drawingManager?.createArc(x + width, y + height, width + 5);
-            }
+            this.drawingManager?.createCutoutBox(x, y, width * 2, height * 2);
         }
         else {
             //helper function just to ensure that the context state is restored as needed

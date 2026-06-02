@@ -14,9 +14,6 @@ export class AnimatedTutorial {
     private initialise(args: TutorialArgs | null = null): void {
         this.args = new TutorialArgs();
         if (args != null) {
-            if (!!args.cutout) {
-                this.args.cutout = args.cutout;
-            }
             if (args.transitionTimeMS != null) {
                 this.args.transitionTimeMS = args.transitionTimeMS;
             }
