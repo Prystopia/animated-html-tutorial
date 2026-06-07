@@ -70,7 +70,6 @@ tutorial.run();
 Config values can be passed into the `AnimatedTutorial` class to change the look and feel of the tutorial.
 
 1. `transitionTimeMS` - how long the transition between elements takes to complete (defaults to 400ms);
-1. `cutout` - Shape used to highlight the elements on the screen.  Accepts one of two values, "Box" and "Oval", defaults to "Box";
 1. `font` - Font used to display messages to the user, defaults to "16px system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif";
 1. `overlayColour` - String value representing the colour the overlay should be, defaults to "rgba(15,23,42,0.6)";
 1. `highlightColour` - String value representing the colour the element highlight should be, defaults to "rgba(79, 142, 247, 0.7)";
